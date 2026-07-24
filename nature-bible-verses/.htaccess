@@ -1,0 +1,22 @@
+# Nature Bible Verses Directory - Extension Hiding Rules
+
+Options -MultiViews
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirect visible .php URLs to extensionless (GET only)
+    RewriteCond %{REQUEST_METHOD} =GET
+    RewriteCond %{THE_REQUEST} \s/+nature-bible-verses/(.*)\.php[\s?] [NC]
+    RewriteRule ^(.+)\.php$ /nature-bible-verses/$1 [R=301,L]
+    
+    # Serve existing files/directories as-is
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Map extensionless URLs to .php
+    RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+</IfModule>

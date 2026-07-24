@@ -1,0 +1,23 @@
+# Public Directory - Extension Hiding Rules
+# Inherits from parent .htaccess but adds specific rules for public folder
+
+Options -MultiViews
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # No RewriteBase - let it auto-detect
+    
+    # Redirect visible .php URLs to extensionless (GET only)
+    RewriteCond %{REQUEST_METHOD} =GET
+    RewriteCond %{THE_REQUEST} \s/+public/(.*)\.php[\s?] [NC]
+    RewriteRule ^(.+)\.php$ $1 [R=301,L]
+    
+    # Serve existing files/directories as-is
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Map extensionless URLs to .php
+    RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+</IfModule>

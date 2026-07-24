@@ -1,0 +1,56 @@
+Options -MultiViews
+Options -Indexes
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # RewriteBase will auto-detect - remove the localhost-specific path
+    
+    # Home page
+    RewriteRule ^$ index.php [L]
+    
+    # Redirect visible .php URLs to extensionless (GET only)
+    RewriteCond %{REQUEST_METHOD} =GET
+    RewriteCond %{THE_REQUEST} \s/+(.*)\.php[\s?] [NC]
+    RewriteRule ^(.+)\.php$ /$1 [R=301,L]
+    
+    # Serve existing files/directories (including css/js/images) as-is
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Map extensionless URLs to .php
+    # /public/about -> /public/about.php, /public/body-of-work -> /public/body-of-work.php, etc.
+    RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+</IfModule>
+
+# Security: Prevent direct access to sensitive files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect config files
+<FilesMatch "(config|constants|db|writing-pieces)\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Enable GZIP compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Browser caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
