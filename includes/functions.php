@@ -61,22 +61,7 @@ function truncate($string, $length = 100, $append = '...') {
     return $truncated . $append;
 }
 
-/**
- * Generate WhatsApp deep link with optional pre-filled message
- * 
- * @param string $message Optional message to pre-fill
- * @return string WhatsApp wa.me URL
- */
-function whatsappLink($message = '') {
-    $number = WHATSAPP_NUMBER;
-    $url = "https://wa.me/{$number}";
-    
-    if (!empty($message)) {
-        $url .= '?text=' . urlencode($message);
-    }
-    
-    return $url;
-}
+// WhatsApp function removed - contact via email only
 
 /**
  * Determine if current page matches path and return active CSS classes

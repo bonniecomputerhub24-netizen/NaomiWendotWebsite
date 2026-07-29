@@ -336,10 +336,6 @@ $allCategories = [
                            target="_blank" rel="noopener" class="share-pill">
                             𝕏 Twitter
                         </a>
-                        <a href="https://wa.me/?text=<?php echo urlencode($piece['title'].' — https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']); ?>"
-                           target="_blank" rel="noopener" class="share-pill">
-                            WhatsApp
-                        </a>
                         <button onclick="navigator.clipboard.writeText(window.location.href).then(()=>{this.textContent='✓ Copied!'});setTimeout(()=>{this.textContent='Copy Link'},2000)"
                                 class="share-pill">
                             Copy Link
@@ -424,12 +420,6 @@ $allCategories = [
                         <h3 class="text-sm font-bold text-plum mb-3 font-playfair">Want to Connect?</h3>
                         <a href="contact.php" class="inline-block w-full px-6 py-3 bg-plum text-cream font-semibold rounded-full hover:opacity-90 transition-all font-inter text-sm">
                             Send a Message
-                        </a>
-                        <a href="<?php echo e(whatsappLink('Hello Naomi, I loved your writing!')); ?>" 
-                           target="_blank" 
-                           class="block text-center mt-3 text-xs font-semibold font-inter"
-                           style="color: rgba(74, 25, 66, 0.8);">
-                            📱 WhatsApp
                         </a>
                     </div>
                 </aside>

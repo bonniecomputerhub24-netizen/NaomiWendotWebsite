@@ -154,20 +154,7 @@ function initSmoothScroll() {
     });
 }
 
-/**
- * WhatsApp Share Helper
- * Opens WhatsApp with pre-filled message
- * 
- * @param {string} text - Message to share
- */
-function shareOnWhatsApp(text) {
-    const whatsappNumber = '12529033215';
-    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-}
-
-// Make shareOnWhatsApp globally available
-window.shareOnWhatsApp = shareOnWhatsApp;
+// WhatsApp function removed - contact via email only
 
 /**
  * Flash Message Auto-Dismiss

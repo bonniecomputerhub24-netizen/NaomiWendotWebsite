@@ -12,8 +12,7 @@ define('SITE_EMAIL', 'info@naomiwendot.com');
 define('AUTHOR_NAME', 'Naomi Wendot');
 
 // Contact Information
-define('WHATSAPP_NUMBER', '12529033215'); // Digits only for wa.me links
-define('WHATSAPP_DISPLAY', '+1 252 903 3215');
+// Phone number removed - use email only: info@naomiwendot.com
 
 // Brand Colors (Hex)
 define('COLOR_PLUM', '#4A1942');
