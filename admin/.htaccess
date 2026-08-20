@@ -1,0 +1,23 @@
+# PHP Configuration for Video Uploads
+php_value upload_max_filesize 100M
+php_value post_max_size 105M
+php_value max_execution_time 300
+php_value max_input_time 300
+php_value memory_limit 256M
+
+# Enable output buffering
+php_flag output_buffering On
+
+# Allow large file uploads
+LimitRequestBody 104857600
+
+# Allow .js files
+<FilesMatch "\.(js|css)$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</FilesMatch>

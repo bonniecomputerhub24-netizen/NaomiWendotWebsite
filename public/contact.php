@@ -27,8 +27,8 @@ $metaDescription = "Get in touch with Naomi Wendot — send a message, read what
                         charcoal: '#1C1C1C'
                     },
                     fontFamily: {
-                        playfair: ['"Playfair Display"', 'serif'],
-                        inter: ['Inter', 'sans-serif']
+                        montserrat: ['Montserrat', 'sans-serif'],
+                        century: ['Century Gothic', 'CenturyGothic', 'AppleGothic', 'sans-serif']
                     }
                 }
             }
@@ -38,7 +38,7 @@ $metaDescription = "Get in touch with Naomi Wendot — send a message, read what
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700;1,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo basePath(); ?>assets/css/custom.css">
@@ -171,6 +171,9 @@ $metaDescription = "Get in touch with Naomi Wendot — send a message, read what
                                 ></textarea>
                             </div>
                             
+                            <!-- Honeypot for spam prevention -->
+                            <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">
+                            
                             <!-- Submit Button -->
                             <button 
                                 type="submit" 
@@ -184,10 +187,8 @@ $metaDescription = "Get in touch with Naomi Wendot — send a message, read what
                                 Naomi personally reads every message and will respond as soon as she is able.
                             </p>
                             
-                            <!-- Success Message (Hidden) -->
-                            <div id="form-success" class="hidden bg-gold bg-opacity-10 border border-gold rounded-xl p-4 text-center">
-                                <p class="text-plum font-semibold font-inter">Thank you! Your message has been sent.</p>
-                            </div>
+                            <!-- Success/Error Message (Hidden by default) -->
+                            <div id="form-success" class="hidden border-2 rounded-xl p-4 mt-4"></div>
                         </form>
                     </div>
                 </div>
@@ -357,32 +358,101 @@ $metaDescription = "Get in touch with Naomi Wendot — send a message, read what
             const contactForm = document.getElementById('contact-form');
             const formSuccess = document.getElementById('form-success');
             
-            contactForm.addEventListener('submit', (e) => {
+            contactForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                const name = document.getElementById('name').value.trim();
-                const email = document.getElementById('email').value.trim();
-                const message = document.getElementById('message').value.trim();
+                // Hide any previous success message
+                formSuccess.classList.add('hidden');
                 
-                // Basic validation
-                if (!name || !email || !message) {
-                    alert('Please fill in all required fields.');
-                    return;
+                const formData = new FormData(contactForm);
+                const submitBtn = contactForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<svg class="animate-spin w-6 h-6 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                
+                try {
+                    const response = await fetch('<?php echo basePath(); ?>api/contact.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Show success message
+                        formSuccess.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-green-800 font-bold font-montserrat">Message Sent Successfully!</p>
+                                    <p class="text-green-700 text-sm font-century mt-1">${data.message}</p>
+                                </div>
+                            </div>
+                        `;
+                        formSuccess.classList.remove('hidden');
+                        formSuccess.classList.add('bg-green-50', 'border-green-300');
+                        formSuccess.classList.remove('bg-gold', 'bg-opacity-10', 'border-gold');
+                        
+                        // Reset form
+                        contactForm.reset();
+                        
+                        // Scroll to success message
+                        formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Re-enable button after a delay
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }, 2000);
+                    } else {
+                        // Show error message in the success div
+                        formSuccess.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-red-800 font-bold font-montserrat">Oops! Something went wrong</p>
+                                    <p class="text-red-700 text-sm font-century mt-1">${data.message || 'Please check your information and try again.'}</p>
+                                </div>
+                            </div>
+                        `;
+                        formSuccess.classList.remove('hidden');
+                        formSuccess.classList.add('bg-red-50', 'border-red-300');
+                        formSuccess.classList.remove('bg-gold', 'bg-opacity-10', 'border-gold');
+                        
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                        
+                        // Scroll to error message
+                        formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                } catch (error) {
+                    console.error('Contact form error:', error);
+                    formSuccess.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <svg class="w-6 h-6 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <p class="text-red-800 font-bold font-montserrat">Connection Error</p>
+                                <p class="text-red-700 text-sm font-century mt-1">Unable to send your message. Please try again or email Naomi directly.</p>
+                            </div>
+                        </div>
+                    `;
+                    formSuccess.classList.remove('hidden');
+                    formSuccess.classList.add('bg-red-50', 'border-red-300');
+                    formSuccess.classList.remove('bg-gold', 'bg-opacity-10', 'border-gold');
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    
+                    // Scroll to error message
+                    formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-                
-                // Email validation
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    alert('Please enter a valid email address.');
-                    return;
-                }
-                
-                // Show success message (no backend yet)
-                contactForm.style.display = 'none';
-                formSuccess.classList.remove('hidden');
-                
-                // TODO: Replace with actual backend API call
-                console.log('Form submitted:', { name, email, message });
             });
         });
     </script>

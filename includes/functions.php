@@ -105,6 +105,11 @@ function basePath() {
         return '../';
     }
     
+    // For files in shop/ directory
+    if (strpos($relativePath, '/shop') !== false) {
+        return '../';
+    }
+    
     // For files in body-of-work/, nature-bible-verses/, verses/ or similar subdirectories
     if (strpos($relativePath, '/body-of-work') !== false || 
         strpos($relativePath, '/nature-bible-verses') !== false ||

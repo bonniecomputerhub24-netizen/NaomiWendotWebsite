@@ -27,8 +27,8 @@ $metaDescription = "An in-progress illustrated picture book pairing Scripture on
                         charcoal: '#1C1C1C'
                     },
                     fontFamily: {
-                        playfair: ['"Playfair Display"', 'serif'],
-                        inter: ['Inter', 'sans-serif']
+                        montserrat: ['Montserrat', 'sans-serif'],
+                        century: ['Century Gothic', 'CenturyGothic', 'AppleGothic', 'sans-serif']
                     }
                 }
             }
@@ -38,7 +38,7 @@ $metaDescription = "An in-progress illustrated picture book pairing Scripture on
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700;1,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo basePath(); ?>assets/css/custom.css">

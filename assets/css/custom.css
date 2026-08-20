@@ -5,7 +5,7 @@
  */
 
 /* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700;1,800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
 
 /* CSS Custom Properties */
 :root {
@@ -14,6 +14,8 @@
     --color-cream: #FFFDF5;
     --color-rose: #FDEAEA;
     --color-charcoal: #1C1C1C;
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
 }
 
 /* Base Styles */
@@ -24,7 +26,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     background-color: var(--color-cream);
     color: var(--color-charcoal);
     overflow-x: hidden;
@@ -63,7 +65,16 @@ section, div, main, article, aside {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
+}
+
+/* Font utility classes */
+.font-montserrat {
+    font-family: var(--font-heading);
+}
+
+.font-century {
+    font-family: var(--font-body);
 }
 
 /* Tailwind Shortcuts for Brand Colors */
@@ -175,14 +186,14 @@ h1, h2, h3, h4, h5, h6 {
     top: 0.5rem;
     left: 0.75rem;
     font-size: 3rem;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     color: var(--color-gold);
     opacity: 0.15;
     line-height: 1;
 }
 
 .verse-card .verse-text {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     color: var(--color-plum);
     font-size: 1.125rem;
@@ -208,7 +219,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .declaration-card .declaration-text {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-heading);
     font-style: italic;
     color: var(--color-plum);
     font-size: 1.5rem;
@@ -436,6 +447,22 @@ h1, h2, h3, h4, h5, h6 {
     .tilt-card {
         transform: rotate(0);
     }
+}
+
+/* Video Play Button Pulse Animation */
+@keyframes videoPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+}
+
+.play-button-pulse {
+    animation: videoPulse 2s ease-in-out infinite;
 }
 
 /* Reduced Motion */
