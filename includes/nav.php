@@ -5,7 +5,7 @@
  * Benchmarked against BCH for seamless dropdown experience
  */
 
-if (!isset($_SESSION)) {
+if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
@@ -15,27 +15,42 @@ require_once __DIR__ . '/../config/db.php';
 
 $base = basePath();
 
-// Fetch categories from database
+// Fetch categories from database (with caching to reduce queries)
 $navCategories = [];
-try {
-    $db = getDb();
-    $stmt = $db->query("
-        SELECT DISTINCT c.id, c.name, c.slug 
-        FROM categories c 
-        INNER JOIN posts p ON c.id = p.category_id 
-        WHERE p.status = 'published'
-        ORDER BY c.display_order ASC, c.name ASC
-    ");
-    $navCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    // Fallback to predefined categories if DB fails
-    $navCategories = [
-        ['slug' => 'poems', 'name' => 'Poems'],
-        ['slug' => 'articles', 'name' => 'Articles'],
-        ['slug' => 'daily-inspirations', 'name' => 'Daily Inspirations'],
-        ['slug' => 'stories', 'name' => 'Stories'],
-        ['slug' => 'testimonies', 'name' => 'Testimonies']
-    ];
+$cacheKey = 'nav_categories';
+$cacheFile = sys_get_temp_dir() . '/' . $cacheKey . '.json';
+$cacheTime = 300; // 5 minutes
+
+// Try to get from cache first
+if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTime)) {
+    $navCategories = json_decode(file_get_contents($cacheFile), true);
+} else {
+    // Fetch from database
+    try {
+        $db = getDb();
+        $stmt = $db->query("
+            SELECT DISTINCT c.id, c.name, c.slug 
+            FROM categories c 
+            INNER JOIN posts p ON c.id = p.category_id 
+            WHERE p.status = 'published'
+            ORDER BY c.display_order ASC, c.name ASC
+            LIMIT 10
+        ");
+        $navCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Cache the result
+        @file_put_contents($cacheFile, json_encode($navCategories));
+    } catch (Exception $e) {
+        // Fallback to predefined categories if DB fails
+        error_log("Nav categories fetch error: " . $e->getMessage());
+        $navCategories = [
+            ['slug' => 'poems', 'name' => 'Poems'],
+            ['slug' => 'articles', 'name' => 'Articles'],
+            ['slug' => 'daily-inspirations', 'name' => 'Daily Inspirations'],
+            ['slug' => 'stories', 'name' => 'Stories'],
+            ['slug' => 'testimonies', 'name' => 'Testimonies']
+        ];
+    }
 }
 ?>
 <nav id="main-nav" class="fixed top-0 left-0 right-0 z-50 bg-cream bg-opacity-95 backdrop-blur-sm transition-all duration-300">

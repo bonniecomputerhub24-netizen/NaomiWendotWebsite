@@ -70,6 +70,9 @@ $recentPosts = getLatestPosts(5);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo basePath(); ?>assets/css/custom.css">
@@ -419,7 +422,7 @@ $recentPosts = getLatestPosts(5);
                                     <?php 
                                     $isHandwritten = !empty($post['handwritten_image']);
                                     ?>
-                                <article class="blog-card reveal active" style="transition-delay: <?php echo ($index % 3) * 0.07; ?>s;">
+                                <article class="blog-card category-<?php echo htmlspecialchars($post['category_slug']); ?> reveal active" style="transition-delay: <?php echo ($index % 3) * 0.07; ?>s;">
                                     <?php if ($post['handwritten_image'] || $post['featured_image']): ?>
                                         <!-- Image content -->
                                         <div class="blog-card-img h-48 <?php echo $isHandwritten ? 'is-handwritten' : ''; ?>">
@@ -447,7 +450,7 @@ $recentPosts = getLatestPosts(5);
                                             </a>
                                         </h3>
 
-                                        <p class="text-charcoal text-sm font-century leading-relaxed mb-4 line-clamp-2 flex-1">
+                                        <p class="excerpt text-charcoal text-sm font-century leading-relaxed mb-4 line-clamp-2 flex-1">
                                             <?php echo formatExcerpt($post, 120); ?>
                                         </p>
 

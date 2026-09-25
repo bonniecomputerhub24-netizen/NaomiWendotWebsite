@@ -4,7 +4,10 @@
  * Naomi Wendot Admin Panel
  */
 
-session_start();
+// Start session only if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Admin credentials (in production, store hashed password in database)
 define('ADMIN_USERNAME', 'naomi');

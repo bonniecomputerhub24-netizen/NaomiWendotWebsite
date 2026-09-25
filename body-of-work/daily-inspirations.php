@@ -241,7 +241,7 @@ $currentPage = $result['current_page'];
                         $isHandwritten = !empty($inspiration['handwritten_image']);
                         $postUrl = basePath() . 'public/piece-single.php?slug=' . urlencode($inspiration['slug']);
                     ?>
-                        <article class="blog-card">
+                        <article class="blog-card category-daily-inspirations">
                             <!-- Image/Thumbnail -->
                             <?php if ($isHandwritten || $inspiration['featured_image']): ?>
                                 <div class="blog-card-img">

@@ -25,7 +25,8 @@ class Database {
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
-                PDO::ATTR_PERSISTENT         => false
+                PDO::ATTR_PERSISTENT         => false,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
             ];
 
             $this->connection = new PDO($dsn, DB_USER, DB_PASS, $options);
@@ -34,8 +35,23 @@ class Database {
             error_log("Database Connection Error: " . $e->getMessage());
             
             // Show generic error to user
-            die("Database connection failed. Please try again later.");
+            http_response_code(503);
+            die("Service temporarily unavailable. Please try again in a moment.");
         }
+    }
+    
+    /**
+     * Close the database connection
+     */
+    public function closeConnection() {
+        $this->connection = null;
+    }
+    
+    /**
+     * Destructor to ensure connection is closed
+     */
+    public function __destruct() {
+        $this->closeConnection();
     }
 
     /**

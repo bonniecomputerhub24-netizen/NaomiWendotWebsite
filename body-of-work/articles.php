@@ -241,7 +241,7 @@ $currentPage = $result['current_page'];
                         $isHandwritten = !empty($article['handwritten_image']);
                         $postUrl = basePath() . 'public/piece-single.php?slug=' . urlencode($article['slug']);
                     ?>
-                        <article class="blog-card">
+                        <article class="blog-card category-articles">
                             <!-- Image/Thumbnail -->
                             <?php if ($isHandwritten || $article['featured_image']): ?>
                                 <div class="blog-card-img">

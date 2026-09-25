@@ -241,7 +241,7 @@ $currentPage = $result['current_page'];
                         $isHandwritten = !empty($testimony['handwritten_image']);
                         $postUrl = basePath() . 'public/piece-single.php?slug=' . urlencode($testimony['slug']);
                     ?>
-                        <article class="blog-card">
+                        <article class="blog-card category-testimonies">
                             <!-- Image/Thumbnail -->
                             <?php if ($isHandwritten || $testimony['featured_image']): ?>
                                 <div class="blog-card-img">

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/post-functions.php';
@@ -69,6 +70,9 @@ if (!$post) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo basePath(); ?>assets/css/custom.css">
@@ -117,8 +121,11 @@ if (!$post) {
         .prose-content a { color: #D4A017; font-weight: 600; }
 
         /* Share pills */
-        .share-pill { display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .9rem;border-radius:9999px;font-size:.7rem;font-weight:700;border:1.5px solid rgba(74,25,66,.15);color:#4A1942;transition:all .2s;cursor:pointer; }
-        .share-pill:hover { background:#4A1942;color:#fff;border-color:#4A1942; }
+        .share-pill { display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .9rem;border-radius:9999px;font-size:.7rem;font-weight:700;border:1.5px solid rgba(74,25,66,.15);color:#4A1942;transition:all .2s;cursor:pointer;background:#fff; }
+        .share-pill:hover { background:#4A1942;color:#fff;border-color:#4A1942;transform:translateY(-2px);box-shadow:0 4px 12px rgba(74,25,66,.2); }
+        .share-pill.copy-social { border-color:rgba(212,160,23,.5);color:#D4A017;background:rgba(212,160,23,.05); }
+        .share-pill.copy-social:hover { background:#D4A017;color:#4A1942;border-color:#D4A017; }
+        .share-section { background:linear-gradient(135deg,rgba(253,234,234,.8),rgba(255,253,245,.8));border-radius:1.25rem;padding:1.5rem;border:2px dashed rgba(212,160,23,.25); }
 
         /* Author card */
         .author-card { background: linear-gradient(135deg, #4A1942 0%, #5A2952 100%); border-radius: 1.25rem; padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem; }
@@ -239,10 +246,10 @@ if (!$post) {
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-10">
 
                     <!-- Article -->
-                    <article class="lg:col-span-3 space-y-6 reveal active" id="article-body">
+                    <article class="lg:col-span-3 space-y-6 reveal active category-<?php echo htmlspecialchars($post['category_slug']); ?>" id="article-body">
 
                         <div class="article-card">
-                            <h1 class="font-montserrat font-bold text-plum text-2xl md:text-3xl lg:text-4xl leading-tight mb-4">
+                            <h1 class="handwriting-title font-artistic font-bold text-plum text-2xl md:text-3xl lg:text-4xl leading-tight mb-4">
                                 <?php echo htmlspecialchars($post['title']); ?>
                             </h1>
 
@@ -257,7 +264,19 @@ if (!$post) {
                             </div>
                             <div class="gold-bar w-14 my-4"></div>
 
-                            <div class="prose-content text-charcoal font-century" style="font-size: 1.125rem;">
+                            <div class="prose-content text-charcoal 
+                                <?php 
+                                // Apply different handwriting styles based on category
+                                if ($post['category_slug'] === 'poems') {
+                                    echo 'poetry font-signature';
+                                } elseif ($post['category_slug'] === 'stories') {
+                                    echo 'font-signature';
+                                } elseif ($post['category_slug'] === 'daily-inspirations') {
+                                    echo 'category-daily-inspirations font-handwriting';
+                                } else {
+                                    echo 'font-handwriting';
+                                }
+                                ?>">
                                 <?php echo $post['content']; ?>
                             </div>
                         </div>
@@ -277,17 +296,62 @@ if (!$post) {
                             <p id="like-feedback" class="text-gold font-semibold mt-3 hidden font-century">❤️ Thank you for the love!</p>
                         </div>
 
-                        <!-- Share row -->
-                        <div class="flex flex-wrap items-center gap-3">
-                            <span class="text-xs font-semibold text-gray-500 mr-1">Share this piece:</span>
-                            <a href="https://twitter.com/intent/tweet?text=<?php echo urlencode($post['title']); ?>&url=<?php echo urlencode('https://naomiwendot.com/public/piece-single?slug=' . $post['slug']); ?>"
-                               target="_blank" rel="noopener" class="share-pill">𝕏 Twitter</a>
-                            <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo urlencode('https://naomiwendot.com/public/piece-single?slug=' . $post['slug']); ?>"
-                               target="_blank" rel="noopener" class="share-pill">LinkedIn</a>
-                            <a href="https://api.whatsapp.com/send?text=<?php echo urlencode($post['title'] . ' - https://naomiwendot.com/public/piece-single?slug=' . $post['slug']); ?>"
-                               target="_blank" rel="noopener" class="share-pill">WhatsApp</a>
-                            <button onclick="copyLink()" class="share-pill">Copy Link</button>
-                            <p id="copy-feedback" class="text-green-600 font-semibold text-xs hidden font-century w-full">✓ Link copied to clipboard!</p>
+                        <!-- Enhanced Share Section -->
+                        <div class="share-section reveal">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                                </svg>
+                                <span class="text-sm font-bold text-plum font-montserrat">Share this piece with others</span>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button onclick="copyForSocial(this)" class="share-pill copy-social" title="Copy formatted text ready for social media">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Copy for Social
+                                </button>
+                                <a href="https://twitter.com/intent/tweet?text=<?php echo urlencode($post['title'] . ' by Naomi Wendot'); ?>&url=<?php echo urlencode('https://naomiwendot.com/public/piece-single?slug=' . $post['slug']); ?>"
+                                   target="_blank" rel="noopener" class="share-pill" title="Share on X (Twitter)">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                                    </svg>
+                                    𝕏 Twitter
+                                </a>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode('https://naomiwendot.com/public/piece-single?slug=' . $post['slug']); ?>"
+                                   target="_blank" rel="noopener" class="share-pill" title="Share on Facebook">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+                                    </svg>
+                                    Facebook
+                                </a>
+                                <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo urlencode('https://naomiwendot.com/public/piece-single?slug=' . $post['slug']); ?>"
+                                   target="_blank" rel="noopener" class="share-pill" title="Share on LinkedIn">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+                                    </svg>
+                                    LinkedIn
+                                </a>
+                                <a href="https://api.whatsapp.com/send?text=<?php echo urlencode($post['title'] . ' by Naomi Wendot - https://naomiwendot.com/public/piece-single?slug=' . $post['slug']); ?>"
+                                   target="_blank" rel="noopener" class="share-pill" title="Share via WhatsApp">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path>
+                                    </svg>
+                                    WhatsApp
+                                </a>
+                                <button onclick="copyLink()" class="share-pill" title="Copy link to clipboard">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                    Copy Link
+                                </button>
+                            </div>
+                            <p id="copy-feedback" class="text-green-600 font-semibold text-xs hidden font-century mt-3 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span id="copy-feedback-text">Link copied to clipboard!</span>
+                            </p>
                         </div>
 
                         <!-- Author card -->
@@ -489,10 +553,67 @@ if (!$post) {
             const url = window.location.href;
             navigator.clipboard.writeText(url).then(function () {
                 const feedback = document.getElementById('copy-feedback');
+                const feedbackText = document.getElementById('copy-feedback-text');
+                feedbackText.textContent = '✓ Link copied to clipboard!';
                 feedback.classList.remove('hidden');
                 setTimeout(function () { feedback.classList.add('hidden'); }, 3000);
             }).catch(function () {
                 alert('Failed to copy link. Please copy manually: ' + url);
+            });
+        }
+
+        // Copy formatted text for social media - enhanced version
+        function copyForSocial(btn) {
+            const titleEl = document.querySelector('#article-body h1');
+            const prose = document.querySelector('.prose-content');
+            if (!prose) return;
+
+            const titleText = titleEl ? titleEl.innerText.trim() : '';
+            let bodyText = '';
+
+            // Extract content preserving structure
+            prose.querySelectorAll('h2, h3, h4, p, li, blockquote').forEach(el => {
+                const text = el.innerText.trim();
+                if (!text) return;
+                
+                if (el.tagName === 'LI') {
+                    bodyText += '• ' + text + '\n';
+                } else if (el.tagName === 'H2' || el.tagName === 'H3') {
+                    bodyText += '\n' + text.toUpperCase() + '\n\n';
+                } else if (el.tagName === 'BLOCKQUOTE') {
+                    bodyText += '\n"' + text + '"\n\n';
+                } else {
+                    bodyText += text + '\n\n';
+                }
+            });
+
+            // Build final formatted text
+            const separator = '✨'.repeat(10);
+            const fullText = `${separator}\n\n${titleText}\n\nby Naomi Wendot\n\n${separator}\n\n${bodyText.trim()}\n\n${separator}\n\nRead more at:\n${window.location.href}\n\n#NaomiWendot #Faith #Inspiration #Christian #Writer`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(fullText).then(() => {
+                const originalText = btn.textContent;
+                const feedback = document.getElementById('copy-feedback');
+                const feedbackText = document.getElementById('copy-feedback-text');
+                
+                btn.textContent = '✓ Copied!';
+                btn.style.background = '#22c55e';
+                btn.style.borderColor = '#22c55e';
+                btn.style.color = '#fff';
+                
+                feedbackText.textContent = '✓ Formatted text copied! Ready to paste on Facebook, WhatsApp Channel, LinkedIn, or Instagram.';
+                feedback.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                    feedback.classList.add('hidden');
+                }, 3500);
+            }).catch(() => {
+                alert('Could not copy automatically. Please select and copy the article text manually.');
             });
         }
 
@@ -540,7 +661,7 @@ if (!$post) {
         }
 
         window.addEventListener('load', function () {
-            const slug = '<?php echo isset($post) ? htmlspecialchars($post['slug']) : ''; ?>';
+            const slug = '<?php echo (isset($post) && is_array($post) && isset($post['slug'])) ? htmlspecialchars($post['slug'], ENT_QUOTES, 'UTF-8') : ''; ?>';
             if (!slug) return;
             const likedKey = 'liked_post_' + slug;
             if (localStorage.getItem(likedKey)) {

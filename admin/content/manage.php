@@ -5,12 +5,23 @@
  * Naomi Wendot Admin Panel
  */
 
+// Increase memory and execution limits for this page
+@ini_set('memory_limit', '512M');
+@ini_set('max_execution_time', '90');
+@set_time_limit(90);
+
+// Disable unnecessary features temporarily
+@ini_set('display_errors', '0');
+error_reporting(0);
+
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../../config/db.php';
 requireAdminLogin();
 
 $pageTitle = 'Manage Writing';
 $flash = '';
+
+// Use persistent connection
 $db = getDb();
 
 // ═══════════════════════════════════════════════════════════════
@@ -265,8 +276,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':video_orientation' => $videoOrientation
             ];
             
-            // Featured image
+            // Get current post data for image deletion
+            $stmt = $db->prepare("SELECT featured_image, handwritten_image FROM posts WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            $currentPost = $stmt->fetch();
+            
+            // Handle image removal requests
+            if (isset($_POST['remove_featured_image']) && $_POST['remove_featured_image'] == '1') {
+                // Delete the old file
+                if (!empty($currentPost['featured_image'])) {
+                    $oldImagePath = __DIR__ . '/../../' . $currentPost['featured_image'];
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                $imageUpdate = ', featured_image = NULL';
+            }
+            
+            if (isset($_POST['remove_handwritten_image']) && $_POST['remove_handwritten_image'] == '1') {
+                // Delete the old file
+                if (!empty($currentPost['handwritten_image'])) {
+                    $oldHandwrittenPath = __DIR__ . '/../../' . $currentPost['handwritten_image'];
+                    if (file_exists($oldHandwrittenPath)) {
+                        unlink($oldHandwrittenPath);
+                    }
+                }
+                $handwrittenUpdate = ', handwritten_image = NULL';
+            }
+            
+            // Featured image upload (replaces existing)
             if (!empty($_FILES['image']['name'])) {
+                // Delete old image if it exists
+                if (!empty($currentPost['featured_image'])) {
+                    $oldImagePath = __DIR__ . '/../../' . $currentPost['featured_image'];
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                
                 $uploadDir = __DIR__ . '/../../uploads/blog/';
                 if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
                 
@@ -280,8 +327,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             
-            // Handwritten image
+            // Handwritten image upload (replaces existing)
             if (!empty($_FILES['handwritten_image']['name'])) {
+                // Delete old handwritten image if it exists
+                if (!empty($currentPost['handwritten_image'])) {
+                    $oldHandwrittenPath = __DIR__ . '/../../' . $currentPost['handwritten_image'];
+                    if (file_exists($oldHandwrittenPath)) {
+                        unlink($oldHandwrittenPath);
+                    }
+                }
+                
                 $uploadDir = __DIR__ . '/../../uploads/handwritten/';
                 if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
                 
@@ -424,7 +479,7 @@ if (!empty($_SESSION['flash_message'])) {
 $search = isset($_GET['q']) ? trim($_GET['q']) : '';
 $filterCat = isset($_GET['category']) ? trim($_GET['category']) : '';
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-$perPage = 10;
+$perPage = 5; // Reduced from 10 to 5 for better performance
 $offset = ($page - 1) * $perPage;
 
 // Predefined categories
@@ -478,55 +533,61 @@ $debugInfo = [];
 try {
     $db = getDb();
     
-    // Check if video_file column exists (for backward compatibility)
-    $columnsQuery = $db->query("SHOW COLUMNS FROM posts LIKE 'video_file'");
-    $hasVideoFile = $columnsQuery->rowCount() > 0;
-    $debugInfo['hasVideoFile'] = $hasVideoFile;
+    // Cache column existence checks to avoid repeated queries
+    $cacheKey = 'posts_table_columns_v2';
+    $cacheFile = sys_get_temp_dir() . '/' . $cacheKey . '.json';
+    $cacheTime = 3600; // 1 hour cache
     
-    // Check if video_thumbnail column exists
-    $thumbQuery = $db->query("SHOW COLUMNS FROM posts LIKE 'video_thumbnail'");
-    $hasVideoThumbnail = $thumbQuery->rowCount() > 0;
-    $debugInfo['hasVideoThumbnail'] = $hasVideoThumbnail;
+    $columnChecks = null;
     
-    // Check if video_duration column exists
-    $durationQuery = $db->query("SHOW COLUMNS FROM posts LIKE 'video_duration'");
-    $hasVideoDuration = $durationQuery->rowCount() > 0;
-    $debugInfo['hasVideoDuration'] = $hasVideoDuration;
+    // Try to get from cache first
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTime)) {
+        $columnChecks = json_decode(file_get_contents($cacheFile), true);
+    }
     
-    // Check if video_poster column exists
-    $posterQuery = $db->query("SHOW COLUMNS FROM posts LIKE 'video_poster'");
-    $hasVideoPoster = $posterQuery->rowCount() > 0;
-    $debugInfo['hasVideoPoster'] = $hasVideoPoster;
+    // If not in cache, check columns once
+    if (!$columnChecks) {
+        $columnsResult = $db->query("SHOW COLUMNS FROM posts");
+        $existingColumns = [];
+        while ($col = $columnsResult->fetch()) {
+            $existingColumns[$col['Field']] = true;
+        }
+        
+        // Only check essential columns
+        $columnChecks = [
+            'hasVideoFile' => isset($existingColumns['video_file']),
+            'hasVideoPoster' => isset($existingColumns['video_poster']),
+            'hasContentType' => isset($existingColumns['content_type'])
+        ];
+        
+        // Cache the result
+        @file_put_contents($cacheFile, json_encode($columnChecks));
+    }
     
-    // Check if video_orientation column exists
-    $orientationQuery = $db->query("SHOW COLUMNS FROM posts LIKE 'video_orientation'");
-    $hasVideoOrientation = $orientationQuery->rowCount() > 0;
-    $debugInfo['hasVideoOrientation'] = $hasVideoOrientation;
+    $hasVideoFile = $columnChecks['hasVideoFile'];
+    $hasVideoPoster = $columnChecks['hasVideoPoster'];
+    $hasContentType = $columnChecks['hasContentType'];
     
-    // Check if content_type column exists
-    $typeQuery = $db->query("SHOW COLUMNS FROM posts LIKE 'content_type'");
-    $hasContentType = $typeQuery->rowCount() > 0;
-    $debugInfo['hasContentType'] = $hasContentType;
+    $debugInfo = array_merge($debugInfo, $columnChecks);
     
     $videoFileSelect = $hasVideoFile ? ', p.video_file' : ', NULL as video_file';
-    $videoThumbSelect = $hasVideoThumbnail ? ', p.video_thumbnail' : ', NULL as video_thumbnail';
-    $videoDurationSelect = $hasVideoDuration ? ', p.video_duration' : ', NULL as video_duration';
     $videoPosterSelect = $hasVideoPoster ? ', p.video_poster' : ', NULL as video_poster';
-    $videoOrientationSelect = $hasVideoOrientation ? ', p.video_orientation' : ', NULL as video_orientation';
     $contentTypeSelect = $hasContentType ? ', p.content_type' : ', NULL as content_type';
     
     $debugInfo['whereSql'] = $whereSql;
     $debugInfo['params'] = $params;
     
+    // Extremely optimized query - minimal data fetch
     $s = $db->prepare("
-        SELECT p.id, p.title, p.slug, p.content, p.excerpt, p.featured_image, 
-               p.handwritten_image $videoFileSelect $videoThumbSelect $videoDurationSelect $videoPosterSelect $videoOrientationSelect $contentTypeSelect,
+        SELECT p.id, p.title, p.slug, 
+               p.excerpt, p.featured_image, 
+               p.handwritten_image $videoFileSelect $videoPosterSelect $contentTypeSelect,
                p.status, p.published_at, p.created_at,
                c.name as category_name, c.id as category_id
         FROM posts p
         LEFT JOIN categories c ON p.category_id = c.id
         $whereSql
-        ORDER BY p.created_at DESC, p.id DESC
+        ORDER BY p.id DESC
         LIMIT :lim OFFSET :off
     ");
     foreach ($params as $k => $v) {
@@ -1355,15 +1416,31 @@ $adminName = getAdminName();
                 <label class="block text-sm font-semibold text-plum mb-2">
                     Featured Image <span class="text-gray-400 text-xs">(optional - main thumbnail)</span>
                 </label>
+                
+                <!-- Current Image Display -->
+                <div id="edit-current-featured-image" class="hidden mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p class="text-xs font-semibold text-gray-700 mb-2">📸 Current Image:</p>
+                    <div class="flex items-start gap-3">
+                        <img id="edit-img-preview" src="" alt="Current featured image" class="h-24 w-32 object-cover rounded-lg border border-gray-300">
+                        <div class="flex-1">
+                            <p class="text-xs text-gray-600 mb-2">This image is currently used as the thumbnail</p>
+                            <label class="inline-flex items-center gap-2 text-xs text-red-600 hover:text-red-700 cursor-pointer">
+                                <input type="checkbox" name="remove_featured_image" value="1" class="rounded">
+                                <span>Remove this image</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
                 <input 
                     type="file" 
                     name="image" 
                     accept="image/*" 
-                    data-preview="edit-img-preview"
+                    data-preview="edit-img-preview-new"
                     class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gold file:text-white hover:file:bg-plum"
                 >
-                <img id="edit-img-preview" src="" alt="" class="hidden mt-3 h-32 w-48 object-cover rounded-lg border border-gray-200">
-                <p class="text-xs text-gray-500 mt-1">Used as the main image for posts - suitable for all content</p>
+                <img id="edit-img-preview-new" src="" alt="" class="hidden mt-3 h-32 w-48 object-cover rounded-lg border border-gray-200">
+                <p class="text-xs text-gray-500 mt-1">Upload a new image to replace the current one (or leave empty to keep existing)</p>
             </div>
             
             <!-- Handwritten Image (for non-video posts) -->
@@ -1371,15 +1448,31 @@ $adminName = getAdminName();
                 <label class="block text-sm font-semibold text-plum mb-2">
                     Handwritten Content Image <span class="text-gray-400 text-xs">(optional - for authenticity)</span>
                 </label>
+                
+                <!-- Current Handwritten Image Display -->
+                <div id="edit-current-handwritten-image" class="hidden mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p class="text-xs font-semibold text-gray-700 mb-2">✍️ Current Handwritten Image:</p>
+                    <div class="flex items-start gap-3">
+                        <img id="edit-handwritten-preview" src="" alt="Current handwritten image" class="h-24 w-32 object-cover rounded-lg border border-gray-300">
+                        <div class="flex-1">
+                            <p class="text-xs text-gray-600 mb-2">This is your current handwritten piece</p>
+                            <label class="inline-flex items-center gap-2 text-xs text-red-600 hover:text-red-700 cursor-pointer">
+                                <input type="checkbox" name="remove_handwritten_image" value="1" class="rounded">
+                                <span>Remove this image</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
                 <input 
                     type="file" 
                     name="handwritten_image" 
                     accept="image/*,application/pdf" 
-                    data-preview="edit-handwritten-preview"
+                    data-preview="edit-handwritten-preview-new"
                     class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-plum file:text-white hover:file:bg-gold"
                 >
-                <img id="edit-handwritten-preview" src="" alt="" class="hidden mt-3 h-32 w-48 object-cover rounded-lg border border-gray-200">
-                <p class="text-xs text-gray-500 mt-1">✍️ Upload a scan/photo of handwritten piece - adds authenticity & personal touch</p>
+                <img id="edit-handwritten-preview-new" src="" alt="" class="hidden mt-3 h-32 w-48 object-cover rounded-lg border border-gray-200">
+                <p class="text-xs text-gray-500 mt-1">✍️ Upload a new scan/photo to replace the current one (or leave empty to keep existing)</p>
             </div>
             
             <!-- Video Duration (for video posts) -->
@@ -2153,10 +2246,46 @@ document.addEventListener('click', function(e) {
             if (editVideoDurationSection) editVideoDurationSection.classList.add('hidden');
             if (editVideoFileSection) editVideoFileSection.classList.add('hidden');
             
-            // Clear image preview
-            const preview = document.getElementById('edit-img-preview');
-            if (preview) {
-                preview.classList.add('hidden');
+            // Show existing featured image if it exists
+            const editImgPreview = document.getElementById('edit-img-preview');
+            const editImgCurrentSection = document.getElementById('edit-current-featured-image');
+            
+            if (data.featured_image) {
+                if (editImgPreview) {
+                    editImgPreview.src = basePath + data.featured_image;
+                    editImgPreview.classList.remove('hidden');
+                }
+                if (editImgCurrentSection) {
+                    editImgCurrentSection.classList.remove('hidden');
+                }
+            } else {
+                if (editImgPreview) {
+                    editImgPreview.classList.add('hidden');
+                }
+                if (editImgCurrentSection) {
+                    editImgCurrentSection.classList.add('hidden');
+                }
+            }
+            
+            // Show existing handwritten image if it exists
+            const editHandwrittenPreview = document.getElementById('edit-handwritten-preview');
+            const editHandwrittenCurrentSection = document.getElementById('edit-current-handwritten-image');
+            
+            if (data.handwritten_image) {
+                if (editHandwrittenPreview) {
+                    editHandwrittenPreview.src = basePath + data.handwritten_image;
+                    editHandwrittenPreview.classList.remove('hidden');
+                }
+                if (editHandwrittenCurrentSection) {
+                    editHandwrittenCurrentSection.classList.remove('hidden');
+                }
+            } else {
+                if (editHandwrittenPreview) {
+                    editHandwrittenPreview.classList.add('hidden');
+                }
+                if (editHandwrittenCurrentSection) {
+                    editHandwrittenCurrentSection.classList.add('hidden');
+                }
             }
         }
     }

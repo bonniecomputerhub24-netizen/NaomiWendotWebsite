@@ -75,6 +75,9 @@ $currentPage = $result['current_page'];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo basePath(); ?>assets/css/custom.css">
@@ -167,7 +170,7 @@ $currentPage = $result['current_page'];
             </div>
 
             <!-- Title -->
-            <h1 class="font-playfair font-bold text-cream text-5xl md:text-6xl mb-4">
+            <h1 class="page-title-poems font-bold text-cream text-5xl md:text-6xl mb-4">
                 Poems
             </h1>
 
@@ -241,7 +244,7 @@ $currentPage = $result['current_page'];
                         $isHandwritten = !empty($poem['handwritten_image']);
                         $postUrl = basePath() . 'public/piece-single.php?slug=' . urlencode($poem['slug']);
                     ?>
-                        <article class="blog-card">
+                        <article class="blog-card category-poems">
                             <!-- Image/Thumbnail -->
                             <?php if ($isHandwritten || $poem['featured_image']): ?>
                                 <div class="blog-card-img">
@@ -257,14 +260,14 @@ $currentPage = $result['current_page'];
 
                             <!-- Content -->
                             <div class="p-6 flex flex-col flex-1">
-                                <h3 class="font-playfair font-bold text-plum text-xl mb-2 line-clamp-2">
+                                <h3 class="font-artistic font-bold text-plum text-xl mb-2 line-clamp-2">
                                     <a href="<?php echo $postUrl; ?>" class="hover:text-gold transition-colors">
                                         <?php echo htmlspecialchars($poem['title']); ?>
                                     </a>
                                 </h3>
 
                                 <?php if (!empty($poem['excerpt'])): ?>
-                                    <p class="text-charcoal text-sm font-century leading-relaxed mb-4 line-clamp-3 flex-1">
+                                    <p class="excerpt text-charcoal text-sm font-signature leading-relaxed mb-4 line-clamp-3 flex-1" style="font-style: italic;">
                                         <?php echo formatExcerpt($poem, 150); ?>
                                     </p>
                                 <?php endif; ?>
