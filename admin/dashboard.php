@@ -16,7 +16,9 @@ $stats = [
     'total_posts' => 0,
     'total_testimonies' => 0,
     'total_subscribers' => 0,
-    'pending_testimonies' => 0
+    'pending_testimonies' => 0,
+    'family_photos' => 0,
+    'pending_access_requests' => 0
 ];
 
 try {
@@ -35,6 +37,18 @@ try {
     // Pending testimonies
     $stmt = $db->query("SELECT COUNT(*) as count FROM testimonies WHERE status = 'pending'");
     $stats['pending_testimonies'] = (int)$stmt->fetch()['count'];
+    
+    // Family Album stats (check if tables exist first)
+    $stmt = $db->query("SHOW TABLES LIKE 'family_album_photos'");
+    if ($stmt->fetch()) {
+        // Family album photos
+        $stmt = $db->query("SELECT COUNT(*) as count FROM family_album_photos");
+        $stats['family_photos'] = (int)$stmt->fetch()['count'];
+        
+        // Pending access requests
+        $stmt = $db->query("SELECT COUNT(*) as count FROM family_album_access WHERE status = 'pending'");
+        $stats['pending_access_requests'] = (int)$stmt->fetch()['count'];
+    }
 } catch (Exception $e) {
     error_log("Dashboard stats error: " . $e->getMessage());
 }

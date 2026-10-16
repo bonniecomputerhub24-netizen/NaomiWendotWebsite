@@ -1,0 +1,30 @@
+# Family Album - Private Family Access
+# Protected pages - access control handled by PHP
+Options -Indexes
+Options -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirect visible .php URLs to extensionless (GET only)
+    RewriteCond %{REQUEST_METHOD} =GET
+    RewriteCond %{THE_REQUEST} \s/+(.*)\.php[\s?] [NC]
+    RewriteRule ^(.+)\.php$ $1 [R=301,L]
+    
+    # Serve existing files/directories (including css/js/images) as-is
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Map extensionless URLs to .php files
+    # /family_album/access -> /family_album/access.php
+    # /family_album/index -> /family_album/index.php
+    # /family_album/upload -> /family_album/upload.php
+    RewriteRule ^([^/]+)/?$ $1.php [L,QSA]
+</IfModule>
+
+# Security: Prevent direct access to sensitive files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

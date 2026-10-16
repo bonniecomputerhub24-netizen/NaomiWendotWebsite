@@ -95,6 +95,25 @@ function isActive($page, $dir = 'admin') {
                 </svg>
                 <span class="font-medium">All Books</span>
             </a>
+
+            <!-- Family Album Section -->
+            <div class="mt-6 mb-2">
+                <p class="px-4 text-xs font-semibold text-gold/60 uppercase tracking-wider">Family</p>
+            </div>
+
+            <a href="<?php echo $adminBase; ?>family_album/manage.php" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all <?php echo isActive('manage.php', 'family_album'); ?>">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="font-medium">Family Album</span>
+            </a>
+
+            <a href="<?php echo $adminBase; ?>family_album/access-control.php" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all <?php echo isActive('access-control.php', 'family_album'); ?>">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <span class="font-medium">Family Members</span>
+            </a>
             
             <!-- System Section -->
             <div class="mt-6 mb-2">

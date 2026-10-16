@@ -1,0 +1,15 @@
+# Family Album Upload Security
+# Allow image files to be served but prevent directory browsing
+Options -Indexes
+
+# Allow access to image files
+<Files ~ "\.(jpg|jpeg|png|gif|webp)$">
+    Order allow,deny
+    Allow from all
+</Files>
+
+# Deny everything else
+<Files ~ "^(?!\.(jpg|jpeg|png|gif|webp)$).*$">
+    Order deny,allow
+    Deny from all
+</Files>
